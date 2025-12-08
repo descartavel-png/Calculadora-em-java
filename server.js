@@ -95,7 +95,31 @@ app.post('/v1/chat/completions', async (req, res) => {
     // Transform OpenAI request to NIM format
     const nimRequest = {
       model: nimModel,
-      messages: messages.slice(-100),
+      // Keep messages that fit within ~24,000 tokens (~96,000 characters)
+messages: (() => {
+  let charCount = 0;
+  const maxChars = 96000; // ~24k tokens
+  const kept = [];
+  
+  // Always keep first message (character card)
+  if (messages.length > 0) {
+    kept.push(messages[0]);
+    charCount += (messages[0].content?.length || 0);
+  }
+  
+  // Add messages from end until we hit limit
+  for (let i = messages.length - 1; i >= 1; i--) {
+    const msgLength = messages[i].content?.length || 0;
+    if (charCount + msgLength < maxChars) {
+      kept.unshift(messages[i]);
+      charCount += msgLength;
+    } else {
+      break;
+    }
+  }
+  
+  return kept;
+})(),
       temperature: temperature || 0.6,
       max_tokens: max_tokens || 9024,
       extra_body: ENABLE_THINKING_MODE ? { chat_template_kwargs: { thinking: true } } : undefined,
