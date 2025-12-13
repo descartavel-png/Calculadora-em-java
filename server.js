@@ -121,7 +121,7 @@ messages: (() => {
   return kept;
 })(),
       temperature: temperature || 0.6,
-      max_tokens: max_tokens || 163840,
+      max_tokens: max_tokens || 8192,
       extra_body: ENABLE_THINKING_MODE ? { chat_template_kwargs: { thinking: true } } : undefined,
       stream: stream || false
     };
